@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="commons-codec-1.4">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/commons-codec/commons-codec/1.4/4216af16d38465bbab0f3dff8efa14204f7a399a/commons-codec-1.4.jar!/" />
+      <root url="jar://$APPLICATION_HOME_DIR$/gradle/m2repository/commons-codec/commons-codec/1.4/commons-codec-1.4.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
