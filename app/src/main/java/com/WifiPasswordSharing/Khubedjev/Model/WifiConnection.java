@@ -23,7 +23,17 @@ import java.util.List;
  */
 public class WifiConnection {
 
+    private static WifiConnection connection;
+
     private WifiManager wifiManager;
+
+    private WifiConnection(){}
+
+    public static WifiConnection getInstance() {
+        if(connection == null)
+            connection = new WifiConnection();
+        return connection;
+    }
 
     public boolean connectToNetworkWPA( String networkSSID, String passwordMD5 )
     {
