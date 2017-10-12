@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import de.robv.android.xposed.XposedHelpers;
 
 /**
  * Created by stanislavtyrsa on 04.10.17.
@@ -109,7 +108,7 @@ public class WifiConnection {
     public void lookupWifi(){
         List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
         for(WifiConfiguration wifi : configuredNetworks){
-
+            
         }
     }
 
