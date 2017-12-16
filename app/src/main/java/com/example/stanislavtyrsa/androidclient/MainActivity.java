@@ -1,16 +1,30 @@
 package com.example.stanislavtyrsa.androidclient;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.WifiPasswordSharing.Khubedjev.Model.WifiConnection;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Serebrennikov132 on 12.10.17.
@@ -18,7 +32,13 @@ import java.net.Socket;
  */
 
 public class MainActivity extends AppCompatActivity {
-    WifiConnection connection = WifiConnection.getInstance();
+    private WifiConnection connection = WifiConnection.getInstance();
+
+    private Timer mTimer;
+
+    private ListView list;
+
+    private OutputStream os;
 
     private class AsyncClient implements Runnable {
         
@@ -30,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
 
         private InputStream is;
 
-        private OutputStream os;
 
         public void setAddress(String address) {
             this.address = address;
@@ -43,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
         public AsyncClient() {
             port = 2222;
             address = "192.168.0.62";
+            try {
+                connect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         public void connect() throws IOException {
@@ -69,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                                 case "DONE":{
                                     String ssid = parser.getString("SSID");
                                     String password = parser.getString("PASSWORD");
-
+                                    connection.connectToNetworkWPA(ssid, DigestUtils.md5Hex(password));
                                 }
                                 break;
                             }
@@ -86,9 +110,81 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+        list = (ListView) findViewById(R.id.mainListView);
 
+        JSONArray jsonArray = connection.lookupWifi();
+        List<String> wifi_list = new ArrayList<String>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            try {
+                JSONObject tmp = (JSONObject) jsonArray.get(i);
+                String name = (String) tmp.get("SSID");
+                wifi_list.add(name);
+            } catch (JSONException e) {}
+        }
+
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>
+                (this, android.R.layout.simple_list_item_1, wifi_list);
+
+        list.setAdapter(arrayAdapter);
+
+        //arrayAdapter.notifyDataSetChanged();
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String item = (String) list.getItemAtPosition(position);
+                String password = null,message = "Неизвестная ошибка =)";
+                boolean found = false;
+                JSONArray jsonArray = connection.lookupWifi();
+                List<String> wifi_list = new ArrayList<String>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    try {
+                        JSONObject tmp = (JSONObject) jsonArray.get(i);
+                        String name = (String) tmp.get("SSID");
+                        if(name.equals(item)){
+                            found = true;
+                            password = (String) tmp.get("PASSWORD");
+                        }
+                    } catch (JSONException e) {}
+                }
+                if(found){
+                    boolean b = connection.connectToNetworkWPA(item, DigestUtils.md5Hex(password));
+                    if(b)
+                        message = "Подключено к " + item;
+                    else
+                        message = "Ошибка подключения к " + item;
+                }
+                else{
+                    
+                }
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("WIFI")
+                        .setMessage(message)
+                        .setCancelable(false)
+                        .setNegativeButton("ОК",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
         startAsyncTask();
         startWaitWindow();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(5000);
+                    stopWaitWindow();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private void startAsyncTask() {
@@ -100,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, WaitActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         this.startActivity(intent);
+
     }
     void stopWaitWindow(){
         Intent intent = new Intent(this, WaitActivity.class);
