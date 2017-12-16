@@ -3,6 +3,9 @@ package com.example.stanislavtyrsa.androidclient;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+
+import com.WifiPasswordSharing.Khubedjev.Model.WifiConnection;
+
 import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +18,7 @@ import java.net.Socket;
  */
 
 public class MainActivity extends AppCompatActivity {
+    WifiConnection connection = WifiConnection.getInstance();
 
     private class AsyncClient implements Runnable {
         
@@ -34,6 +38,11 @@ public class MainActivity extends AppCompatActivity {
 
         public void setPort(int port) {
             this.port = port;
+        }
+
+        public AsyncClient() {
+            port = 2222;
+            address = "192.168.0.62";
         }
 
         public void connect() throws IOException {
@@ -60,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
                                 case "DONE":{
                                     String ssid = parser.getString("SSID");
                                     String password = parser.getString("PASSWORD");
+
                                 }
                                 break;
                             }
@@ -76,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+
         startAsyncTask();
         startWaitWindow();
     }

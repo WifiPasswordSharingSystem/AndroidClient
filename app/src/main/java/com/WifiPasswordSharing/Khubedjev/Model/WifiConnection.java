@@ -8,6 +8,9 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -35,7 +38,7 @@ public class WifiConnection {
         return connection;
     }
 
-    public boolean connectToNetworkWPA( String networkSSID, String passwordMD5 )
+    public  boolean connectToNetworkWPA( String networkSSID, String passwordMD5 )
     {
         try {
             String password = DigestUtils.md5Hex(passwordMD5);
@@ -115,11 +118,21 @@ public class WifiConnection {
             return false;
         }
     }
-    public void lookupWifi(){
+    public JSONArray lookupWifi(){
+        JSONArray array = new JSONArray();
         List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
         for(WifiConfiguration wifi : configuredNetworks){
-            
+            JSONObject object = new JSONObject();
+            try {
+                object.put("SSID", wifi.BSSID);
+                object.put("PASSWORD", wifi.wepKeys[0]);
+                array.put(object);
+            } catch (JSONException e) {
+                System.err.println("Error in WifiConnection.lookupWifi");
+                e.printStackTrace();
+            }
         }
+        return array;
     }
 
     public  List<HashMap<String, String>> readPasswords() {
