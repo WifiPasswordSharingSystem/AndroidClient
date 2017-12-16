@@ -136,6 +136,20 @@ public class MainActivity extends AppCompatActivity {
                 String password = null,message = "Неизвестная ошибка =)";
                 boolean found = false;
                 JSONArray jsonArray = connection.lookupWifi();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    try {
+                        JSONObject send = new JSONObject();
+                        send.put("Command", "ADD");
+                        JSONObject jsonItem = (JSONObject) jsonArray.get(i);
+                        send.put("SSID", jsonItem.get("SSID"));
+                        send.put("PASSWORD",jsonItem.get("PASSWORD"));
+                        os.write(send.toString().getBytes());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
                 List<String> wifi_list = new ArrayList<String>();
                 for (int i = 0; i < jsonArray.length(); i++) {
                     try {
