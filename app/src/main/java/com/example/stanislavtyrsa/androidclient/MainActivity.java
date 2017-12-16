@@ -155,7 +155,17 @@ public class MainActivity extends AppCompatActivity {
                         message = "Ошибка подключения к " + item;
                 }
                 else{
-                    
+                    JSONObject query = new JSONObject();
+                    try {
+                        query.put("Command", "GET");
+                        query.put("SSID", item);
+                        os.write(query.toString().getBytes());
+                        os.flush();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
